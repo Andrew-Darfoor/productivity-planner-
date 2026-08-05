@@ -109,7 +109,7 @@ function DailyPlanner({ tasks, setTasks }) {
     delete copy[task.id];
     return copy;
   });
-//l
+
   window.removeEventListener("mousemove", handleMouseMove);
   window.removeEventListener("mouseup", handleMouseUp);
 }
