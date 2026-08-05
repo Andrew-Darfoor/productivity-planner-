@@ -76,13 +76,31 @@ function DailyPlanner({ tasks, setTasks }) {
     function handleMouseUp() {
       const finalStart = dragPreview[task.id] ?? originalStart;
 
-      setTasks(old =>
-        old.map(t =>
-          t.id === task.id
-            ? { ...t, startTime: finalStart }
-            : t
-        )
-      );
+// ⭐ Recalculate collisions using UPDATED task list
+setTasks(old => {
+  const updated = old.map(t =>
+    t.id === task.id
+      ? { ...t, startTime: finalStart }
+      : t
+  );
+
+  // ⭐ Re-run collision logic with fresh data
+  const movedTask = updated.find(t => t.id === task.id);
+  const today = updated.filter(t => t.status === "today");
+
+  const correctedStart = findValidStartTime(
+    movedTask,
+    finalStart,
+    today,
+    originalStart
+  );
+
+  return updated.map(t =>
+    t.id === task.id
+      ? { ...t, startTime: correctedStart }
+      : t
+  );
+});
 
       // Clear preview
       setDragPreview(prev => {
