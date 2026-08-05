@@ -1,0 +1,211 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f4f5f7;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 30px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: black;
+}
+
+.board {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.column {
+  flex: 1;
+  min-height: 500px;
+  padding: 16px;
+  border-radius: 10px;
+  background-color: #e2e4e9;
+}
+
+.column h2 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.task {
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  cursor: grab;
+}
+
+.task:active {
+  cursor: grabbing;
+}
+.task p {
+  margin: 0 0 10px;
+}
+
+.task button {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  background: crimson;
+  color: white;
+  cursor: pointer;
+}
+
+.task button:hover {
+  background: darkred;
+}
+
+.task-time {
+  margin: 8px 0;
+  font-size: 0.9rem;
+  color: hsl(0, 0%, 33%);
+}
+.overdue {
+  background-color: #ffcccc;
+  border: 2px solid red;
+}
+
+.daily-planner {
+  margin-top: 50px;
+  color: black;
+}
+
+.daily-planner h2 {
+  color: black;
+}
+
+
+.timeline {
+  position: relative;
+  display: flex;
+  height: 1440px;
+}
+
+
+/* Clock */
+.hours {
+  width: 80px;
+}
+
+
+.hour {
+  height: 60px;
+  border-bottom: 1px solid #999;
+  font-size: 14px;
+  padding-top: 5px;
+  color: black;
+}
+
+
+/* Task area */
+.tasks-layer {
+  position: relative;
+  width: 500px;
+  height: 1440px;
+  border-left: 3px solid black;
+}
+
+
+/* Planner task boxes */
+.schedule-task {
+  position: absolute;
+  left: 20px;
+  width: 400px;
+
+  background-color: #8ecae6;
+
+  border: 2px solid black;
+  border-radius: 8px;
+  color: black;
+  cursor: grab;
+}
+.schedule-task:active {
+  cursor: grabbing;
+}
+.badge-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.badge-card {
+  border: 3px solid;
+  padding: 12px;
+  border-radius: 10px;
+  background: #fff;
+  width: 160px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.badge-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+}
+
+.badge-icon {
+  font-size: 32px;
+}
+
+.badge-text p {
+  margin: 0;
+  font-size: 12px;
+  color: #555;
+}
+.goal-task {
+  background-color: #fff8c4; /* soft yellow */
+  border-left: 4px solid #f2d024;
+}
+.goals-panel {
+  padding: 20px;
+  background: #f7f7f7;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.add-goal-form input {
+  margin-right: 10px;
+  padding: 6px;
+}
+
+.goal-list {
+  margin-top: 15px;
+}
+
+.goal-card {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.delete-goal-btn {
+  background: #e74c3c;
+  color: white;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  margin-left: 10px;
+}
+.goal-task {
+  background-color: #fff8c4;
+  border-left: 4px solid #f2d024;
+}
