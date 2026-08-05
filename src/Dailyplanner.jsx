@@ -1,25 +1,22 @@
 function DailyPlanner({ tasks, setTasks }) {
   const todayTasks = tasks.filter(t => t.status === "today");
 
-  // --- CORE NON-OVERLAP LOGIC ---
+  // ⭐ Local preview state (fixes invisible drag + upward drag bug)
+  const [dragPreview, setDragPreview] = useState({});
+
   function findValidStartTime(task, proposedStart, availableTasks, originalStart) {
-    // Sort all other tasks by startTime
     const sorted = availableTasks
       .filter(t => t.id !== task.id)
       .sort((a, b) => (a.startTime ?? 0) - (b.startTime ?? 0));
 
     let newStart = proposedStart;
 
-    // If dragging above the top, DO NOT clamp to 0.
-    // Clamp to originalStart instead.
     if (newStart < 0) {
       newStart = originalStart;
     }
 
     let changed = true;
 
-    // --- ITERATIVE COLLISION RESOLUTION LOOP ---
-    // This loop continues until NO collisions remain.
     while (changed) {
       changed = false;
 
@@ -34,15 +31,12 @@ function DailyPlanner({ tasks, setTasks }) {
 
         if (!overlaps) continue;
 
-        // Always push downward until clear
         newStart = otherEnd;
 
-        // If pushing downward goes out of range, fall back to originalStart
         if (newStart > 1440 - task.estimatedMinutes) {
           newStart = originalStart;
         }
 
-        // We changed newStart, so we must re-check all tasks again
         changed = true;
         break;
       }
@@ -51,53 +45,59 @@ function DailyPlanner({ tasks, setTasks }) {
     return newStart;
   }
 
-  // --- DRAG HANDLING ---
+  // ⭐ DRAG HANDLING (React-safe)
   function handleMouseDown(e, task) {
-  e.preventDefault();
+    e.preventDefault();
 
-  const startY = e.clientY;
-  const originalStart = task.startTime ?? 0;
-  let previewStart = originalStart; // temporary value
+    const startY = e.clientY;
+    const originalStart = task.startTime ?? 0;
 
-  function handleMouseMove(event) {
-    const deltaY = event.clientY - startY;
+    function handleMouseMove(event) {
+      const deltaY = event.clientY - startY;
 
-    let newStart = originalStart + deltaY;
+      let newStart = originalStart + deltaY;
+      newStart = Math.round(newStart / 15) * 15;
 
-    // Snap to 15-minute increments
-    newStart = Math.round(newStart / 15) * 15;
+      const previewStart = findValidStartTime(
+        task,
+        newStart,
+        todayTasks,
+        originalStart
+      );
 
-    // Apply non-overlap logic
-    previewStart = findValidStartTime(task, newStart, todayTasks, originalStart);
-
-    // ⭐ DO NOT CALL setTasks HERE
-    // Instead, update the DOM element directly for preview
-    const el = document.getElementById(`planner-${task.id}`);
-    if (el) {
-      el.style.top = `${previewStart}px`;
+      // ⭐ Update preview in React state (NOT the DOM)
+      setDragPreview(prev => ({
+        ...prev,
+        [task.id]: previewStart
+      }));
     }
+
+    function handleMouseUp() {
+      const finalStart = dragPreview[task.id] ?? originalStart;
+
+      setTasks(old =>
+        old.map(t =>
+          t.id === task.id
+            ? { ...t, startTime: finalStart }
+            : t
+        )
+      );
+
+      // Clear preview
+      setDragPreview(prev => {
+        const copy = { ...prev };
+        delete copy[task.id];
+        return copy;
+      });
+
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    }
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
   }
 
-  function handleMouseUp() {
-    // ⭐ NOW we update React state ONCE
-    setTasks(oldTasks =>
-      oldTasks.map(t =>
-        t.id === task.id
-          ? { ...t, startTime: previewStart }
-          : t
-      )
-    );
-
-    window.removeEventListener("mousemove", handleMouseMove);
-    window.removeEventListener("mouseup", handleMouseUp);
-  }
-
-  window.addEventListener("mousemove", handleMouseMove);
-  window.addEventListener("mouseup", handleMouseUp);
-}
-
-
-  // --- RENDER ---
   return (
     <div className="daily-planner">
       <h2>Daily Planner</h2>
@@ -111,19 +111,21 @@ function DailyPlanner({ tasks, setTasks }) {
           ))}
         </div>
 
-                <div className="tasks-layer">
-          {todayTasks.map((task) => {
+        <div className="tasks-layer">
+          {todayTasks.map(task => {
             const height = task.estimatedMinutes;
             const scale = Math.max(0.4, Math.min(1, height / 60));
 
+            const top = dragPreview[task.id] ?? (task.startTime ?? 0);
+
             return (
               <div
-  key={task.id}
-  className={`schedule-task ${task.isGoalTask ? "goal-task" : ""}`}
-
-                onMouseDown={(e) => handleMouseDown(e, task)}
+                key={task.id}
+                id={`planner-${task.id}`}
+                className={`schedule-task ${task.isGoalTask ? "goal-task" : ""}`}
+                onMouseDown={e => handleMouseDown(e, task)}
                 style={{
-                  top: `${task.startTime ?? 0}px`,
+                  top: `${top}px`,
                   height: `${task.estimatedMinutes}px`
                 }}
               >
@@ -140,36 +142,34 @@ function DailyPlanner({ tasks, setTasks }) {
                   <p>{task.estimatedMinutes} min</p>
 
                   <button
-  className="complete-btn"
-  onClick={(e) => {
-    e.stopPropagation();
-    setTasks(old =>
-      old.map(t =>
-        t.id === task.id
-          ? { 
-              ...t, 
-              status: "done", 
-              startTime: null,
-              completedAt: Date.now()   // ⭐ add this
-            }
-          : t
-      )
-    );
-  }}
->
-  Complete
-</button>
-
+                    className="complete-btn"
+                    onClick={e => {
+                      e.stopPropagation();
+                      setTasks(old =>
+                        old.map(t =>
+                          t.id === task.id
+                            ? {
+                                ...t,
+                                status: "done",
+                                startTime: null,
+                                completedAt: Date.now()
+                              }
+                            : t
+                        )
+                      );
+                    }}
+                  >
+                    Complete
+                  </button>
                 </div>
               </div>
             );
           })}
         </div>
-
       </div>
-
     </div>
   );
 }
 
 export default DailyPlanner;
+
