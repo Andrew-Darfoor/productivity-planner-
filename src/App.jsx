@@ -319,6 +319,13 @@ return normalizeTodayTasks(loaded);
   const [newTaskDueDate, setNewTaskDueDate] = useState("");
   const [sortOption, setSortOption] = useState("None");
   const stats = useStatistics(tasks);
+  // ⭐ Persistent Badges
+const savedBadges = JSON.parse(localStorage.getItem("plannerBadges"));
+const [badges, setBadges] = useState(savedBadges || []);
+
+// ⭐ Persistent Theme
+const savedTheme = localStorage.getItem("plannerTheme");
+const [theme, setTheme] = useState(savedTheme || "default");
   const [goals, setGoals] = useState(() => {
     const saved = localStorage.getItem("plannerGoals");
     return saved ? JSON.parse(saved) : [];
@@ -348,6 +355,15 @@ useEffect(() => {
     })
   );
 }, []); // ⭐ run once only
+// ⭐ Save badges when they change
+useEffect(() => {
+  localStorage.setItem("plannerBadges", JSON.stringify(badges));
+}, [badges]);
+
+// ⭐ Save theme when it changes
+useEffect(() => {
+  localStorage.setItem("plannerTheme", theme);
+}, [theme]);
 
   function deleteTask(taskId) {
   const task = tasks.find(t => t.id === taskId);
@@ -358,6 +374,18 @@ useEffect(() => {
   }
 
   setTasks(tasks.filter(t => t.id !== taskId));
+}
+// ⭐ Award a badge safely
+function awardBadge(badgeName) {
+  setBadges(old => {
+    if (old.includes(badgeName)) return old; // avoid duplicates
+    return [...old, badgeName];
+  });
+}
+
+// ⭐ Change theme safely
+function changeTheme(newTheme) {
+  setTheme(newTheme);
 }
 
   function resetTasks() {
