@@ -66,6 +66,7 @@ function findValidStartTime(task, proposedStart, availableTasks, originalStart) 
   // Snap to 15 minute intervals
   proposedStart = Math.round(proposedStart / 15) * 15;
 
+
   // Prevent going outside the day
   proposedStart = Math.max(
     0,
@@ -100,6 +101,7 @@ function findValidStartTime(task, proposedStart, availableTasks, originalStart) 
           : t
       )
     );
+
 
     delete dragPreviewRef.current[task.id];
 
