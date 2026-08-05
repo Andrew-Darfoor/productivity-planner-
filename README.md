@@ -1,16 +1,21 @@
-# React + Vite
+📘 README.md — Productivity Planner
+A modern React productivity app that combines task management, goal tracking, daily scheduling, and a built‑in reward system with streaks, badges, and unlockable themes. All progress is saved automatically using localStorage.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+🌟 Overview
+The Productivity Planner is a fast, interactive React application designed to help users organize tasks, track long‑term goals, plan their day, and stay motivated through a dynamic reward system.
 
-Currently, two official plugins are available:
+It features:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+A drag‑and‑drop kanban board
 
-## React Compiler
+A daily planner with conflict‑free scheduling
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Goal creation and task assignment
 
-## Expanding the ESLint configuration
+Automatic streak tracking
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Unlockable badges and themes
+
+Persistent storage across sessions
+
+This app is built for students, professionals, and anyone who wants a structured, motivating way to manage their day.
