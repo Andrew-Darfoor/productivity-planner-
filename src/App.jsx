@@ -306,7 +306,7 @@ function App() {
     const savedTasks = localStorage.getItem("kanbanTasks");
 
     const loaded = savedTasks ? JSON.parse(savedTasks) : initialTasks;
-return normalizeTodayTasks(loaded);
+return loaded;
 
   });
 
@@ -335,26 +335,7 @@ const [theme, setTheme] = useState(savedTheme || "default");
   localStorage.setItem("kanbanTasks", JSON.stringify(tasks));
 }, [tasks]);
 
-useEffect(() => {
-  const now = Date.now();
-
-  setTasks(old =>
-    old.map(task => {
-      if (task.status === "today" && task.enteredTodayAt) {
-        const hours = (now - task.enteredTodayAt) / 1000 / 60 / 60;
-
-        if (hours >= 24) {
-          return {
-            ...task,
-            status: "inProgress",
-            startTime: null
-          };
-        }
-      }
-      return task;
-    })
-  );
-}, []); // ⭐ run once only
+ // ⭐ run once only
 // ⭐ Save badges when they change
 useEffect(() => {
   localStorage.setItem("plannerBadges", JSON.stringify(badges));

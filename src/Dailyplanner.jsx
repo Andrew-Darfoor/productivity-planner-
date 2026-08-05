@@ -1,123 +1,122 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 function DailyPlanner({ tasks, setTasks }) {
+  console.log(">>> THIS DailyPlanner.jsx IS LIVE <<<");
   const todayTasks = tasks.filter(t => t.status === "today");
 
   // ⭐ Local preview state (fixes invisible drag + upward drag bug)
   const [dragPreview, setDragPreview] = useState({});
+  const dragPreviewRef = useRef({});
 
-  function findValidStartTime(task, proposedStart, availableTasks, originalStart) {
-    const sorted = availableTasks
-      .filter(t => t.id !== task.id)
-      .sort((a, b) => (a.startTime ?? 0) - (b.startTime ?? 0));
+function findValidStartTime(task, proposedStart, availableTasks, originalStart) {
+  const sorted = availableTasks
+    .filter(t => t.id !== task.id)
+    .sort((a, b) => (a.startTime ?? 0) - (b.startTime ?? 0));
 
-    let newStart = proposedStart;
+  let newStart = proposedStart;
 
-    if (newStart < 0) {
-      newStart = originalStart;
-    }
-
-    let changed = true;
-
-    while (changed) {
-      changed = false;
-
-      for (const other of sorted) {
-        const otherStart = other.startTime ?? 0;
-        const otherEnd = otherStart + other.estimatedMinutes;
-        const movingEnd = newStart + task.estimatedMinutes;
-
-        const overlaps =
-          newStart < otherEnd &&
-          movingEnd > otherStart;
-
-        if (!overlaps) continue;
-
-        newStart = otherEnd;
-
-        if (newStart > 1440 - task.estimatedMinutes) {
-          newStart = originalStart;
-        }
-
-        changed = true;
-        break;
-      }
-    }
-
-    return newStart;
+  // ⭐ clamp instead of snapping back
+  if (newStart < 0) {
+    newStart = 0;
   }
 
-  // ⭐ DRAG HANDLING (React-safe)
-  function handleMouseDown(e, task) {
-    e.preventDefault();
+  let changed = true;
 
-    const startY = e.clientY;
-    const originalStart = task.startTime ?? 0;
+  while (changed) {
+    changed = false;
 
-    function handleMouseMove(event) {
-      const deltaY = event.clientY - startY;
+    for (const other of sorted) {
+      const otherStart = other.startTime ?? 0;
+      const otherEnd = otherStart + other.estimatedMinutes;
+      const movingEnd = newStart + task.estimatedMinutes;
 
-      let newStart = originalStart + deltaY;
-      newStart = Math.round(newStart / 15) * 15;
+      const overlaps =
+        newStart < otherEnd &&
+        movingEnd > otherStart;
 
-      const previewStart = findValidStartTime(
-        task,
-        newStart,
-        todayTasks,
-        originalStart
-      );
+      if (!overlaps) continue;
 
-      // ⭐ Update preview in React state (NOT the DOM)
-      setDragPreview(prev => ({
-        ...prev,
-        [task.id]: previewStart
-      }));
+      newStart = otherEnd;
+
+      // ⭐ clamp to end of day instead of snapping back
+      if (newStart > 1440 - task.estimatedMinutes) {
+        newStart = 1440 - task.estimatedMinutes;
+      }
+
+      changed = true;
+      break;
     }
+  }
 
-    function handleMouseUp() {
-  const finalStart = dragPreview[task.id] ?? originalStart;
-
-  setTasks(old => {
-    // 1. Apply the new start time
-    const updated = old.map(t =>
-      t.id === task.id
-        ? { ...t, startTime: finalStart }
-        : t
-    );
-
-    // 2. Recalculate collisions using UPDATED tasks
-    const movedTask = updated.find(t => t.id === task.id);
-    const freshToday = updated.filter(t => t.status === "today");
-
-    const correctedStart = findValidStartTime(
-      movedTask,
-      finalStart,
-      freshToday,
-      originalStart
-    );
-
-    // 3. Save corrected position
-    return updated.map(t =>
-      t.id === task.id
-        ? { ...t, startTime: correctedStart }
-        : t
-    );
-  });
-
-  // 4. Clear preview
-  setDragPreview(prev => {
-    const copy = { ...prev };
-    delete copy[task.id];
-    return copy;
-  });
-
-  window.removeEventListener("mousemove", handleMouseMove);
-  window.removeEventListener("mouseup", handleMouseUp);
+  return newStart;
 }
 
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+  // ⭐ DRAG HANDLING (React-safe)
+  function handleMouseDown(e, task) {
+  e.preventDefault();
+
+  const startY = e.clientY;
+  const originalStart = task.startTime ?? 0;
+
+  function handleMouseMove(event) {
+  const deltaY = event.clientY - startY;
+
+  let proposedStart = originalStart + deltaY;
+
+  // Snap to 15 minute intervals
+  proposedStart = Math.round(proposedStart / 15) * 15;
+
+  // Prevent going outside the day
+  proposedStart = Math.max(
+    0,
+    Math.min(
+      proposedStart,
+      1440 - task.estimatedMinutes
+    )
+  );
+
+  const validStart = findValidStartTime(
+    task,
+    proposedStart,
+    todayTasks,
+    originalStart
+  );
+
+  dragPreviewRef.current[task.id] = validStart;
+
+  setDragPreview(prev => ({
+    ...prev,
+    [task.id]: validStart
+  }));
+}
+  function handleMouseUp() {
+    const finalStart =
+      dragPreviewRef.current[task.id] ?? originalStart;
+
+    setTasks(old =>
+      old.map(t =>
+        t.id === task.id
+          ? { ...t, startTime: finalStart }
+          : t
+      )
+    );
+
+    delete dragPreviewRef.current[task.id];
+
+    setDragPreview(prev => {
+      const copy = { ...prev };
+      delete copy[task.id];
+      return copy;
+    });
+
+    window.removeEventListener("mousemove", handleMouseMove);
+    window.removeEventListener("mouseup", handleMouseUp);
   }
+
+  window.addEventListener("mousemove", handleMouseMove);
+  window.addEventListener("mouseup", handleMouseUp);
+}
+
 
   return (
     <div className="daily-planner">
