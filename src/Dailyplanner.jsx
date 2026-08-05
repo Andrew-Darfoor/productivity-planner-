@@ -74,44 +74,46 @@ function DailyPlanner({ tasks, setTasks }) {
     }
 
     function handleMouseUp() {
-      const finalStart = dragPreview[task.id] ?? originalStart;
+  const finalStart = dragPreview[task.id] ?? originalStart;
 
-// ⭐ Recalculate collisions using UPDATED task list
-setTasks(old => {
-  const updated = old.map(t =>
-    t.id === task.id
-      ? { ...t, startTime: finalStart }
-      : t
-  );
+  setTasks(old => {
+    // 1. Apply the new start time
+    const updated = old.map(t =>
+      t.id === task.id
+        ? { ...t, startTime: finalStart }
+        : t
+    );
 
-  // ⭐ Re-run collision logic with fresh data
-  const movedTask = updated.find(t => t.id === task.id);
-  const today = updated.filter(t => t.status === "today");
+    // 2. Recalculate collisions using UPDATED tasks
+    const movedTask = updated.find(t => t.id === task.id);
+    const freshToday = updated.filter(t => t.status === "today");
 
-  const correctedStart = findValidStartTime(
-    movedTask,
-    finalStart,
-    today,
-    originalStart
-  );
+    const correctedStart = findValidStartTime(
+      movedTask,
+      finalStart,
+      freshToday,
+      originalStart
+    );
 
-  return updated.map(t =>
-    t.id === task.id
-      ? { ...t, startTime: correctedStart }
-      : t
-  );
-});
+    // 3. Save corrected position
+    return updated.map(t =>
+      t.id === task.id
+        ? { ...t, startTime: correctedStart }
+        : t
+    );
+  });
 
-      // Clear preview
-      setDragPreview(prev => {
-        const copy = { ...prev };
-        delete copy[task.id];
-        return copy;
-      });
+  // 4. Clear preview
+  setDragPreview(prev => {
+    const copy = { ...prev };
+    delete copy[task.id];
+    return copy;
+  });
 
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    }
+  window.removeEventListener("mousemove", handleMouseMove);
+  window.removeEventListener("mouseup", handleMouseUp);
+}
+
 
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
