@@ -209,3 +209,37 @@ h1 {
   background-color: #fff8c4;
   border-left: 4px solid #f2d024;
 }
+/* Theme backgrounds */
+.theme-red {
+  background-color: #ffdddd;
+}
+
+.theme-blue {
+  background-color: #dde7ff;
+}
+
+.theme-green {
+  background-color: #ddffdd;
+}
+
+.theme-yellow {
+  background-color: #fff9dd;
+}
+
+.theme-orange {
+  background-color: #ffe5cc;
+}
+
+.theme-purple {
+  background-color: #f0ddff;
+}
+
+/* Theme selector buttons */
+.theme-btn {
+  margin: 4px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  font-weight: bold;
+}
