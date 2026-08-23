@@ -566,7 +566,7 @@ className={`task ${task.isGoalTask ? "goal-task" : ""} ${isOverdue(task) ? "over
   }
 
   return (
-    <main className="app">
+    <main className={`app theme-${theme}`}>
       <h1>My Productivity Planner</h1>
     
       <form className="add-task-form" onSubmit={addTask}>
@@ -674,6 +674,24 @@ className={`task ${task.isGoalTask ? "goal-task" : ""} ${isOverdue(task) ? "over
 
 </DragDropContext>
 <StatisticsPanel stats={stats} />
+{/* ⭐ Theme Selector UI */}
+<div className="theme-selector">
+  <h3>Select Theme</h3>
+
+  {Object.entries(stats.themesUnlocked).map(([color, unlocked]) => {
+    if (!unlocked) return null;
+
+    return (
+      <button
+        key={color}
+        onClick={() => changeTheme(color)}
+        className={`theme-btn theme-${color}`}
+      >
+        {color}
+      </button>
+    );
+  })}
+</div>
     </main>
   );
 }
